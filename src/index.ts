@@ -52,7 +52,6 @@ let state = "none";
 });
 
 // TODO: set alerts
-// add a command to list the highest increase in price in lasta 4 hours
 
 bot.on("text", async (ctx) => {
   const isGroupChat = ctx.chat.type.includes("group");

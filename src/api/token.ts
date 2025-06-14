@@ -24,6 +24,7 @@ export async function token_info(address: string) {
 }
 
 export async function token_price_msg(address: string, ctx: Context) {
+  const reply = await ctx.reply("⏳ fetching the currnet price ...");
   const [price, info] = await Promise.all([
     token_price(address),
     token_info(address),
@@ -43,6 +44,7 @@ export async function token_price_msg(address: string, ctx: Context) {
     `<b>Price:</b> ${formattedPrice} \n` +
     `<b>Daily Volume:</b> ${formattedVolume}\n`;
 
+  await ctx.deleteMessage(reply.message_id);
   if (info.logoURI) {
     return ctx.replyWithPhoto(info.logoURI, {
       caption: message,
@@ -50,7 +52,7 @@ export async function token_price_msg(address: string, ctx: Context) {
     });
   }
 
-  // return ctx.reply(message, { parse_mode: "HTML" });
+  return ctx.reply(message, { parse_mode: "HTML" });
 }
 
 function formatPrice(raw: string | number): string {

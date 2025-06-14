@@ -37,7 +37,10 @@ async function rug_check(mint: string): Promise<TokenCheck | null> {
 
 export async function rug_check_msg(address: string, ctx: Context) {
   const data = await rug_check(address);
-  if (!data) return;
+  if (!data)
+    return ctx.reply("❌ Failed to fetch rug check data.", {
+      parse_mode: "HTML",
+    });
   const rug_score = data?.score;
   const rugScoreDot = rug_score && rug_score > 300 ? "🔴" : "🟢";
 
