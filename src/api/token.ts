@@ -1,12 +1,14 @@
 import { Context } from "telegraf";
+import fetch from "node-fetch";
 
 async function token_price(address: string) {
   try {
     const res = await fetch(`https://lite-api.jup.ag/price/v2?ids=${address}`);
     const json = await res.json();
+    // @ts-ignore
     return json.data[address]?.price;
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching price:", err);
   }
 }
 
@@ -18,19 +20,21 @@ export async function token_info(address: string) {
     const json = await res.json();
     return json;
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching token info:", err);
     return null;
   }
 }
 
 export async function token_price_msg(address: string, ctx: Context) {
-  const reply = await ctx.reply("⏳ fetching the current market price ...");
+  const reply = await ctx.reply("⏳ fetching the current price ...");
+
   const [price, info] = await Promise.all([
     token_price(address),
     token_info(address),
   ]);
 
-  if (!price) {
+  if (!price || !info) {
+    await ctx.deleteMessage(reply.message_id);
     return ctx.reply("❌ Failed to fetch token price.", { parse_mode: "HTML" });
   }
 
@@ -45,20 +49,54 @@ export async function token_price_msg(address: string, ctx: Context) {
     `<b>Daily Volume:</b> ${formattedVolume}\n`;
 
   await ctx.deleteMessage(reply.message_id);
-  if (info.logoURI) {
-    return ctx.replyWithPhoto(info.logoURI, {
-      caption: message,
-      parse_mode: "HTML",
-    });
+
+  const logoURL = info.logoURI;
+
+  if (!logoURL) {
+    return ctx.reply(message, { parse_mode: "HTML" });
   }
 
-  return ctx.reply(message, { parse_mode: "HTML" });
+  try {
+    const head = await fetch(logoURL, { method: "HEAD" });
+    const contentType = head.headers.get("content-type");
+
+    // Try sending URL directly if it's a valid image
+    if (contentType?.startsWith("image/")) {
+      try {
+        return await ctx.replyWithPhoto(logoURL, {
+          caption: message,
+          parse_mode: "HTML",
+        });
+      } catch (err) {
+        console.warn("Direct image URL failed, will fallback to buffer:", err);
+      }
+    }
+
+    // Otherwise fetch and send as buffer
+    const res = await fetch(logoURL);
+    const buffer = await res.buffer();
+    const actualType = res.headers.get("content-type");
+
+    if (!actualType?.startsWith("image/")) {
+      throw new Error("Downloaded content is not an image");
+    }
+
+    return await ctx.replyWithPhoto(
+      { source: buffer },
+      {
+        caption: message,
+        parse_mode: "HTML",
+      },
+    );
+  } catch (err) {
+    console.error("Failed to send image, falling back to text:", err);
+    return ctx.reply(message, { parse_mode: "HTML" });
+  }
 }
 
 function formatPrice(raw: string | number): string {
   const num = typeof raw === "string" ? parseFloat(raw) : raw;
 
-  // Format large numbers with K/M/B
   const formatWithSuffix = (n: number) => {
     if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + "B";
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + "M";
