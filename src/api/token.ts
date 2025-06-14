@@ -24,7 +24,7 @@ export async function token_info(address: string) {
 }
 
 export async function token_price_msg(address: string, ctx: Context) {
-  const reply = await ctx.reply("⏳ fetching the currnet price ...");
+  const reply = await ctx.reply("⏳ fetching the current market price ...");
   const [price, info] = await Promise.all([
     token_price(address),
     token_info(address),
