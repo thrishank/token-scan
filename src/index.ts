@@ -1,9 +1,9 @@
 import { Context, Markup, Telegraf } from "telegraf";
 import { isSolanaPublicKey, tokens } from "./utils";
-import { commands, welcomeMessage } from "./text";
+import { commands, errorMessage, welcomeMessage } from "./text";
 import { bubblemap_msg } from "./api/bubblemaps";
 import { rug_check_msg } from "./api/rug_check";
-import { token_price_msg } from "./api/token_price";
+import { token_price_msg } from "./api/token";
 
 require("dotenv").config();
 const token = process.env.BOT_TOKEN;
@@ -51,10 +51,8 @@ let state = "none";
   });
 });
 
-// TODO: token info replace solscan with some other api for metadata use JUP api
-// get the token price from the address and set alerts
+// TODO: set alerts
 // add a command to list the highest increase in price in lasta 4 hours
-// in error message add popular tokens
 
 bot.on("text", async (ctx) => {
   const isGroupChat = ctx.chat.type.includes("group");
@@ -74,11 +72,6 @@ bot.on("text", async (ctx) => {
   }
 
   if (!isSolanaPublicKey(address)) {
-    const errorMessage =
-      "❌ Invalid address. Please enter a valid solana token address.\n\n" +
-      "Example:\n" +
-      "- Solana: <code>HvhG...w2FQ</code>\n";
-
     return ctx.reply(errorMessage, { parse_mode: "HTML" });
   }
 

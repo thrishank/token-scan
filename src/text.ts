@@ -21,3 +21,8 @@ export const commands = [
   { command: "bubblemap", description: "Generate token holder visualization" },
   { command: "price", description: "Get current token price in USD" },
 ];
+
+export const errorMessage =
+  "❌ Invalid address. Please enter a valid solana token address.\n\n" +
+  "Example:\n" +
+  "<code>JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN</code>\n, JUP";
