@@ -2,6 +2,7 @@ import { Builder, By, until, WebDriver } from "selenium-webdriver";
 import * as fs from "fs";
 import { Options } from "selenium-webdriver/chrome";
 import * as path from "path";
+import { Context } from "telegraf";
 
 require("dotenv").config();
 const location = process.env.LOCATION;
@@ -82,7 +83,7 @@ export async function screenshot(address: string): Promise<string | null> {
   }
 }
 
-export async function bubblemap_msg(address: string, ctx: any) {
+export async function bubblemap_msg(address: string, ctx: Context) {
   const message = await ctx.reply(
     "⏳ Generating the bubblemap, please wait...",
   );

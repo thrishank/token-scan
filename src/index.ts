@@ -1,7 +1,9 @@
 import { Context, Markup, Telegraf } from "telegraf";
 import { isSolanaPublicKey, tokens } from "./utils";
+import { commands, welcomeMessage } from "./text";
 import { bubblemap_msg } from "./api/bubblemaps";
 import { rug_check_msg } from "./api/rug_check";
+import { token_price_msg } from "./api/token_price";
 
 require("dotenv").config();
 const token = process.env.BOT_TOKEN;
@@ -13,17 +15,6 @@ if (!token) {
 
 const bot = new Telegraf(token);
 
-const commands = [
-  { command: "help", description: "information about the bot" },
-  { command: "token", description: "Analyze token details and metrics" },
-  {
-    command: "rug_check",
-    description: "Get token detailed rug check analysis",
-  },
-  { command: "bubblemap", description: "Generate token holder visualization" },
-  { command: "price", description: "Get current token price in USD" },
-];
-
 bot.telegram.setMyCommands(commands);
 
 bot.use((ctx, next) => {
@@ -32,19 +23,6 @@ bot.use((ctx, next) => {
 });
 
 bot.start((ctx: Context) => {
-  const welcomeMessage =
-    "🔍 <b>Welcome to Lens Bot</b>\n\n" +
-    "Your Solana token analysis companion. I help you see through the noise with deep token insights.\n\n" +
-    "<b>Quick Start:</b>\n" +
-    "🔸 Paste any Solana token address for instant analysis\n" +
-    "🔸 Use commands below for specific features\n" +
-    "🔸 Add me to groups to help your community\n\n" +
-    "<b>What I can analyze:</b>\n" +
-    "✅ Solana token security &amp; rug detection\n" +
-    "✅ Holder distribution &amp; whale analysis\n" +
-    "✅ Interactive bubble maps\n" +
-    "✅ Real-time price &amp; market data";
-
   return ctx.reply(welcomeMessage, {
     parse_mode: "HTML",
     ...Markup.keyboard([
@@ -72,6 +50,11 @@ let state = "none";
     });
   });
 });
+
+// TODO: token info replace solscan with some other api for metadata use JUP api
+// get the token price from the address and set alerts
+// add a command to list the highest increase in price in lasta 4 hours
+// in error message add popular tokens
 
 bot.on("text", async (ctx) => {
   const isGroupChat = ctx.chat.type.includes("group");
@@ -111,8 +94,14 @@ bot.on("text", async (ctx) => {
 
   if (state === "token" || state === "none") {
     state = "none";
+    token_price_msg(address, ctx);
     rug_check_msg(address, ctx);
     bubblemap_msg(address, ctx);
+  }
+
+  if (state === "price") {
+    state = "none";
+    token_price_msg(address, ctx);
   }
 });
 
