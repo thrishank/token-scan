@@ -1,5 +1,5 @@
 import { Context, Markup, Telegraf } from "telegraf";
-import { isSolanaPublicKey, tokens } from "./utils";
+import { isSolanaPublicKey } from "./utils";
 import { commands, errorMessage, welcomeMessage } from "./text";
 import { bubblemap_msg } from "./api/bubblemaps";
 import { rug_check_msg } from "./api/rug_check";
@@ -51,8 +51,6 @@ let state = "none";
   });
 });
 
-// TODO: set alerts
-
 bot.on("text", async (ctx) => {
   const isGroupChat = ctx.chat.type.includes("group");
   const botUsername = (await bot.telegram.getMe()).username;
@@ -64,11 +62,11 @@ bot.on("text", async (ctx) => {
 
   let address = messageText.replace(`@${botUsername}`, "").trim();
 
-  const isTicker = tokens.has(address.replace(/\s+/g, ""));
-  if (isTicker) {
-    address = tokens.get(address)!;
-    console.log(address);
-  }
+  // const isTicker = tokens.has(address.replace(/\s+/g, ""));
+  // if (isTicker) {
+  //   address = tokens.get(address)!;
+  //   console.log(address);
+  // }
 
   if (!isSolanaPublicKey(address)) {
     return ctx.reply(errorMessage, { parse_mode: "HTML" });
