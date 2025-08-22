@@ -1,5 +1,5 @@
 import { Context } from "telegraf";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 
 async function token_price(address: string) {
   try {
@@ -74,7 +74,8 @@ export async function token_price_msg(address: string, ctx: Context) {
 
     // Otherwise fetch and send as buffer
     const res = await fetch(logoURL);
-    const buffer = await res.buffer();
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     const actualType = res.headers.get("content-type");
 
     if (!actualType?.startsWith("image/")) {

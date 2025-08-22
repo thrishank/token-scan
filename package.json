@@ -7,15 +7,14 @@
     "dev": "tsc && node dist/index.js"
   },
   "dependencies": {
-    "dotenv": "^16.5.0",
-    "node-fetch": "^3.3.2",
-    "selenium-webdriver": "^4.30.0",
+    "dotenv": "^16.6.1",
+    "selenium-webdriver": "^4.35.0",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.17.2",
     "@types/selenium-webdriver": "^4.1.28",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
   }
 }
