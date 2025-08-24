@@ -17,12 +17,14 @@ const bot = new Telegraf(token);
 
 bot.telegram.setMyCommands(commands);
 
+const stateMap = new Map<number, string>();
+
 bot.use((ctx, next) => {
   console.log(ctx.message);
-  next();
+  return next();
 });
 
-bot.start((ctx: Context) => {
+function replyWithMenu(ctx: Context) {
   return ctx.reply(welcomeMessage, {
     parse_mode: "HTML",
     ...Markup.keyboard([
@@ -39,15 +41,15 @@ bot.start((ctx: Context) => {
       ),
     ]),
   });
-});
+}
 
-let state = "none";
+bot.start(replyWithMenu);
+bot.command("help", replyWithMenu);
+
 ["rug_check", "bubblemap", "token", "price"].forEach((command) => {
   bot.command(command, (ctx) => {
-    state = command;
-    ctx.reply("📌 Enter the token address:", {
-      parse_mode: "MarkdownV2",
-    });
+    stateMap.set(ctx.chat.id, command);
+    ctx.reply("📌 Enter the token address:", { parse_mode: "MarkdownV2" });
   });
 });
 
@@ -60,38 +62,34 @@ bot.on("text", async (ctx) => {
     return;
   }
 
-  let address = messageText.replace(`@${botUsername}`, "").trim();
-
-  // const isTicker = tokens.has(address.replace(/\s+/g, ""));
-  // if (isTicker) {
-  //   address = tokens.get(address)!;
-  //   console.log(address);
-  // }
-
+  const address = messageText.replace(`@${botUsername}`, "").trim();
   if (!isSolanaPublicKey(address)) {
     return ctx.reply(errorMessage, { parse_mode: "HTML" });
   }
 
-  if (state === "rug_check") {
-    state = "none";
-    rug_check_msg(address, ctx);
-  }
+  const state = stateMap.get(ctx.chat.id) ?? "none";
 
-  if (state === "bubblemap") {
-    state = "none";
-    bubblemap_msg(address, ctx);
-  }
-
-  if (state === "token" || state === "none") {
-    state = "none";
-    token_price_msg(address, ctx);
-    rug_check_msg(address, ctx);
-    bubblemap_msg(address, ctx);
-  }
-
-  if (state === "price") {
-    state = "none";
-    token_price_msg(address, ctx);
+  switch (state) {
+    case "rug_check":
+      stateMap.set(ctx.chat.id, "none");
+      rug_check_msg(address, ctx);
+      break;
+    case "bubblemap":
+      stateMap.set(ctx.chat.id, "none");
+      bubblemap_msg(address, ctx);
+      break;
+    case "price":
+      stateMap.set(ctx.chat.id, "none");
+      token_price_msg(address, ctx);
+      break;
+    case "token":
+    case "none":
+    default:
+      stateMap.set(ctx.chat.id, "none");
+      token_price_msg(address, ctx);
+      rug_check_msg(address, ctx);
+      bubblemap_msg(address, ctx);
+      break;
   }
 });
 

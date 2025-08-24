@@ -45,8 +45,6 @@ pnpm start
 
 - Token Price Alerts
 
-- Token Ticker Support no need the token mint address
-
 - Bot can be added to groups or used in 1-on-1 chats.
 
 ## 🧾 Available Commands
